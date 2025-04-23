@@ -18,15 +18,15 @@ class LinearPlotCanvas(FigureCanvas):
         self.b = 1
         self.plot_line()
 
-    def plot_line(self, x_point=None):
+    def plot_line(self, m_point=2, x_point=None, b_point=1):
         self.ax.clear()
 
         x = np.linspace(-10, 10, 100)
-        y = self.m * x + self.b
-        self.ax.plot(x, y, label=f"y = {self.m}x + {self.b}")
+        y = m_point * x + b_point
+        self.ax.plot(x, y, label="y = m * x + b")
 
         if x_point is not None:
-            y_point = self.m * x_point + self.b
+            y_point = m_point * x_point + b_point
             self.ax.plot(x_point, y_point, 'ro')
             self.ax.annotate(f"({x_point}, {y_point:.2f})", (x_point, y_point),
                              textcoords="offset points", xytext=(10, 10), ha='center')
@@ -51,25 +51,42 @@ class MainWindow(QMainWindow):
         self.canvas = LinearPlotCanvas(self)
         layout.addWidget(self.canvas)
 
-        # Input section
+        # m, x, b input sections
         input_layout = QHBoxLayout()
-        self.input_field = QLineEdit()
-        self.input_field.setPlaceholderText("Enter x value")
+        self.m_input_field = QLineEdit()
+        self.x_input_field = QLineEdit()
+        self.b_input_field = QLineEdit()
+
+        self.m_input_field.setPlaceholderText("Enter m value")
+        self.x_input_field.setPlaceholderText("Enter x value")
+        self.b_input_field.setPlaceholderText("Enter b value")
+
         self.button = QPushButton("Plot Point")
         self.button.clicked.connect(self.update_plot)
+        
+        input_layout.addWidget(self.m_input_field)
+        input_layout.addWidget(self.x_input_field)
+        input_layout.addWidget(self.b_input_field)
 
-        input_layout.addWidget(QLabel("x:"))
-        input_layout.addWidget(self.input_field)
         input_layout.addWidget(self.button)
 
         layout.addLayout(input_layout)
+    
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
     def update_plot(self):
         try:
-            x_val = float(self.input_field.text())
-            self.canvas.plot_line(x_point=x_val)
+            m_val = float(self.m_input_field.text())
+            x_val = float(self.x_input_field.text())
+            b_val = float(self.b_input_field.text())
+
+            self.canvas.plot_line(
+                m_point=m_val,
+                x_point=x_val,
+                b_point=b_val,
+            )
+        
         except ValueError:
             pass
 

@@ -31,8 +31,6 @@ class PlotWindow(QWidget):
         expression = self.input.text()
         x = np.linspace(-10, 10, 400)
 
-        y = sp.symbols("y")
-        expression
         try:
             y = eval(expression, {"x": x, "np": np, "__builtins__": {}})
             dfdx = np.gradient(y, x)

@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 import sympy as sp
-from PySide6.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QPushButton
+from PySide6.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QPushButton, QLabel
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
@@ -14,12 +14,12 @@ class PlotWindow(QWidget):
         self.setWindowTitle("Wolfram Father")
 
         self.input = QLineEdit()
-        self.input.setPlaceholderText("Enter a function in x, e.g.: x**2 - 3*x")
+        self.input.setPlaceholderText("enter function...")
         self.point_a = QLineEdit()
-        self.point_a.setPlaceholderText("Enter point a, e.g.: -2")
+        self.point_a.setPlaceholderText("enter limit a...")
         self.point_b = QLineEdit()
-        self.point_b.setPlaceholderText("Enter point b, e.g.: 2")
-
+        self.point_b.setPlaceholderText("enter limit b...")
+        self.area_label = QLabel("integral equals to...")
         self.button = QPushButton("PLOT")
 
         self.figure = Figure(figsize=(5, 4), dpi=100)
@@ -35,9 +35,10 @@ class PlotWindow(QWidget):
         layout.addLayout(point_inputs)
 
         layout.addWidget(self.button)
+        layout.addWidget(self.canvas)
+        layout.addWidget(self.area_label)
         layout.addWidget(toolbar)
 
-        layout.addWidget(self.canvas)
         self.setLayout(layout)
         self.init_style()
 
@@ -72,7 +73,7 @@ class PlotWindow(QWidget):
             color="blue", alpha=0.5
         )
         
-        print("area:", area)
+        self.area_label.setText(str(area))
         axes.grid(True)
         axes.legend()
         axes.set_title(f"y = {expression}")
@@ -105,6 +106,13 @@ class PlotWindow(QWidget):
                 border: 1px solid #cccccc;
                 border-radius: 4px;
                 background-color: #ffffff;
+            }
+            QLabel {
+                font-size: 18px;
+                font-family: "Arial", sans-serif;
+                color: #333333;
+                padding: 5px;
+                text-align: center;
             }
         """)
 

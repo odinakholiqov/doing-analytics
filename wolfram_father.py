@@ -6,7 +6,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 from scipy import integrate
-
+from PySide6.QtWidgets import QSpinBox
+import matplotlib.pyplot as plt
 
 class PlotWindow(QWidget):
     def __init__(self):
@@ -21,6 +22,7 @@ class PlotWindow(QWidget):
         self.point_b.setPlaceholderText("enter limit b...")
         self.area_label = QLabel("integral equals to...")
         self.button = QPushButton("PLOT")
+        self.button_surface = QPushButton("PLOT SURFACE")
 
         self.figure = Figure(figsize=(5, 4), dpi=100)
         self.canvas = FigureCanvas(self.figure)
@@ -32,9 +34,13 @@ class PlotWindow(QWidget):
         point_inputs = QHBoxLayout()
         point_inputs.addWidget(self.point_a)
         point_inputs.addWidget(self.point_b)
-        layout.addLayout(point_inputs)
 
-        layout.addWidget(self.button)
+        buttons_layout = QHBoxLayout()
+        buttons_layout.addWidget(self.button)
+        buttons_layout.addWidget(self.button_surface)
+
+        layout.addLayout(point_inputs)
+        layout.addLayout(buttons_layout)
         layout.addWidget(self.canvas)
         layout.addWidget(self.area_label)
         layout.addWidget(toolbar)
@@ -43,6 +49,7 @@ class PlotWindow(QWidget):
         self.init_style()
 
         self.button.clicked.connect(self.plot)
+        self.button_surface.clicked.connect(self.plot_surface)
 
     def plot(self):
         expression = self.input.text()
@@ -55,27 +62,40 @@ class PlotWindow(QWidget):
             dfdx = np.gradient(y, x)
             
             function = lambda x: eval(expression)
-            area = integrate.quad(function, point_a, point_b)
+            area, _ = integrate.quad(function, point_a, point_b)
         except Exception as e:
             print("Invalid function:", e)
             return
 
         self.figure.clear()
         axes = self.figure.add_subplot(111)
-        axes.plot(x, y, color="blue")
+        axes.plot(x, y, color="yellow")
         axes.plot(x, dfdx, color="red")
-        
-        axes.fill_between(
-            x, 
-            y, 
-            0,
-            where=(x > point_a) & (x < point_b),
-            color="blue", alpha=0.5
-        )
-        
-        self.area_label.setText(str(area))
+
         axes.grid(True)
         axes.legend()
+        axes.set_title(f"y = {expression}")
+        self.canvas.draw()
+    
+    def plot_surface(self):
+        expression = self.input.text()
+        point_a = float(self.point_a.text())
+        point_b = float(self.point_b.text())
+
+        x_data = np.arange(point_a, point_b, 0.1)
+        y_data = np.arange(point_a, point_b, 0.1)
+
+        X, Y = np.meshgrid(x_data, y_data)
+
+        try:
+            Z = eval(expression, {"x": X, "y": Y, "np": np, "__builtins__": {}})
+        except Exception as e:
+            print("Invalid function:", e)
+            return
+
+        self.figure.clear()
+        axes = self.figure.add_subplot(111, projection="3d")
+        axes.plot_surface(X, Y, Z, cmap="summer")
         axes.set_title(f"y = {expression}")
         self.canvas.draw()
 
